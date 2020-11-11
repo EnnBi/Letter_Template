@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.aaratech.letter.dao.ImageRepo;
 import com.aaratech.letter.dao.LetterTemplateRepo;
+import com.aaratech.letter.model.Image;
 import com.aaratech.letter.model.LetterTemplate;
 import com.itextpdf.html2pdf.HtmlConverter;
 
@@ -30,6 +31,8 @@ public class LetterTemplateController {
 
 	@Autowired
 	LetterTemplateRepo letterTemplateRepo;
+	@Autowired
+	ImageRepo imageRepo;
 	
 	final String PATH = "D:\\reports_output\\";
 	
@@ -43,19 +46,13 @@ public class LetterTemplateController {
 	
 	@RequestMapping(value="/template",method=RequestMethod.POST)
 	public String saveTemplate(LetterTemplate letterTemplate,Model model){
-		
-		
-		 List<String> valuekeys =new ArrayList<String>(Arrays.asList(StringUtils.substringsBetween(letterTemplate.getBody(),"${","}")));
-		 List<String> imgKeys = new ArrayList<String>(Arrays.asList(StringUtils.substringsBetween(letterTemplate.getBody(),"#{","}")));
-		 valuekeys.addAll(imgKeys);
-		 Set<String> keySet = new HashSet<>();
-		 for (String key : valuekeys) {
-			 key=key.trim();
-			 keySet.add(key);
-		}
-		
-		letterTemplate.setKeys(keySet);
-		letterTemplateRepo.save(letterTemplate);
+	
+		 List<String> valuekeys = new ArrayList<String>(Arrays.asList(StringUtils.substringsBetween(letterTemplate.getBody(),"${","}")));
+		 List<String> imageKeys = new ArrayList<String>(Arrays.asList(StringUtils.substringsBetween(letterTemplate.getBody(),"#{","}")));
+		 
+		 valuekeys.addAll(imageKeys);
+		 letterTemplate.setKeys(new HashSet<>(valuekeys));
+		 letterTemplateRepo.save(letterTemplate);
 		
 		return "template";
 	}
@@ -66,19 +63,28 @@ public class LetterTemplateController {
 		Map<String,String> map = new HashMap<>();
 		map.put("name","Ravi");
 		map.put("date","June-2020");
-		map.put("duadate","8795");
-		map.put("headerimage",PATH+"logo.png");
+		map.put("cost","8795");
+
+		Map<String,Image> imageMap= new HashMap<>();
+		Image headerImage = new Image(PATH+"yt.jpg", 50, 50);
+		imageMap.put("headerimage",headerImage);
+		
+		Image footerImage = new Image(PATH+"logo.png",50,20);
+		imageMap.put("footerimage",footerImage); 
 		String body = template.getBody();
+		
+		
 		for (String key : template.getKeys()) {
 			if(body.contains(valueKey(key)))
 				body = body.replace(valueKey(key),map.getOrDefault(key,""));
 			else if(body.contains(imageKey(key))){
-				String imgTag ="<img src="+map.getOrDefault(key,"")+"/>";
-				body=body.replace(imageKey(key), imgTag);
+				Image image=imageMap.getOrDefault(key,null);
+				if(image!= null){
+					String imgTag ="<img src="+image.getPath()+" width="+image.getWidth()+"  height="+image.getHeight()+"/>";
+					body=body.replace(imageKey(key), imgTag);
+				}
 			}
-			else{
-				//do nothing
-			}
+			
 		}
 		
 		String fileName = PATH+template.getName()+".pdf";
@@ -104,6 +110,7 @@ public class LetterTemplateController {
 	
 	public String imageKey(String key){
 		return "#{"+key+"}";
+		
 	}
 	
 }

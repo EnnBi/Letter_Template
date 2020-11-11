@@ -29,6 +29,9 @@ public class LetterTemplate {
 	@ElementCollection
 	@CollectionTable(name="LETTER_KEYS") 
 	Set<String> keys;
+	
+	
+	
 
 	public long getId() {
 		return id;
@@ -60,6 +63,5 @@ public class LetterTemplate {
 
 	public void setKeys(Set<String> keys) {
 		this.keys = keys;
-	}
-	
+	}	
 }
