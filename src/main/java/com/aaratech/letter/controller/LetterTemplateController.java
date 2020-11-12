@@ -74,6 +74,7 @@ public class LetterTemplateController {
 		attachments.add(PATH+"img2.jpg");
 		attachments.add(PATH+"img3.jpg");
 		body = body.concat("<br><br><br><br><br>");
+		body=body.concat("<div style='page-break-before:always'></div>");
 		for (String image : attachments) {
 			String imgTag ="<img src="+image+"/><br><br>";
 			body = body.concat(imgTag);
