@@ -16,9 +16,7 @@ margin-top: 10px;
 margin-bottom: 10px;
 }
 
-.container{
-max-width:800px !important;
-}
+
 </style>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
 </head>
@@ -55,8 +53,12 @@ max-width:800px !important;
 <!-- Page Content -->
 <div class="container">
   <div class="card border-0 shadow my-5">
+  
     <div class="card-body p-5">
-      <h1 class="font-weight-light">Template Details</h1>
+    <h1 class="font-weight-light">Template Details</h1>
+    <div class="row">
+    <div class="col-md-8">
+      
       <form th:object="${letterTemplate}"  th:action="@{/letter/template}" method="post" class="form-signin" id="form">
       <div class="form-label-group mg-ud" >
                 <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Name" required/>
@@ -71,6 +73,16 @@ max-width:800px !important;
        </div>
       	
        </form>
+       </div>
+       <div class="col-md-4">
+       	<div class="list-group">
+       	<ul>
+			  <li class="list-group-item list-group-item-action active " style="color: white;">Attributes</li>
+			  <li th:each="key: ${keys}" class="list-group-item list-group-item-action" th:text="${key}" style="cursor: pointer;" onclick="insertKey(this)">No attribute</li>
+		</ul>
+		</div>
+       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -82,7 +94,17 @@ CKEDITOR.replace('body',{
 	width:  '670px',
 	height: '200px'
 	});
+function insertKey(e){ 
+	var key = '${'+e.innerText+'}'
+  CKEDITOR.instances['body'].insertHtml(key);
+}
     
+$(document).ready(function(){
+	
+	$('.list-group-item-action').click(function(e){
+		e.preventDefault();
+	});
+});    
 </script>
 </body>
 </html>
