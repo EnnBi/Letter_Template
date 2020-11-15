@@ -22,15 +22,21 @@ public class Attribute{
 	
 	String value;
 	
-	public Attribute(String key, int width, int height,String value) {
-		super();
-		this.key=key;
-		this.width = width;
-		this.height = height;
-		this.value =value;
-	}
+	String status;
+	
+	
 
 	
+	public Attribute(String key, int width, int height, String value, String status) {
+		super();
+		this.key = key;
+		this.width = width;
+		this.height = height;
+		this.value = value;
+		this.status = status;
+	}
+
+
 	public Attribute() {
 		super();
 	}
@@ -76,6 +82,17 @@ public class Attribute{
 	
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+
+	public String getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(String status) {
+		this.status = status;
 	}	
+	
 	
 }

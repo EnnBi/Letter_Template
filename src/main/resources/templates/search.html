@@ -41,6 +41,8 @@
       <th scope="col">#</th>
       <th scope="col">Name</th>
       <th scope="col">Type</th>
+      <th scope="col">Created By</th>
+      <th scope="col">Created On</th>
       <th scope="col">Actions</th>
     </tr>
   </thead>
@@ -49,6 +51,8 @@
       <th scope="row" th:text="${iter.index+1}"></th>
       <td th:text="${template.name}">Name</td>
       <td th:text="${template.type}">Type</td>
+      <td th:text="${template.createdBy}">Created By</td>
+      <td th:text="${template.createdOn}">Created On</td>
       <td>
           <a th:href="@{'/letter/edit/'+${template.id}}" class="btn btn-primary">Edit</a>
 		  <a th:href="@{'/letter/delete/'+${template.id}}"  class="btn btn-danger">Delete</a>

@@ -30,6 +30,7 @@ public class LetterTemplate {
 	
 	String updatedBy;
 	
+	String status;
 
 	public long getId() {
 		return id;
@@ -94,6 +95,15 @@ public class LetterTemplate {
 	public void setUpdatedBy(String updatedBy) {
 		this.updatedBy = updatedBy;
 	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
 	
 	
 }

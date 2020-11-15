@@ -34,6 +34,7 @@ public class LetterTemplateController {
 	@Autowired
 	AttributeRepo attributeRepo;
 	
+	final String ACTIVE="Active";
 	final String PATH = "D:\\reports_output\\";
 	
 	@RequestMapping(value="/template",method=RequestMethod.GET)
@@ -42,7 +43,7 @@ public class LetterTemplateController {
 		if(!model.asMap().containsKey("letterTemplate"))
 			model.addAttribute("letterTemplate", new LetterTemplate());
 		
-		model.addAttribute("keys", attributeRepo.findAllKeys());
+		model.addAttribute("keys", attributeRepo.findAllKeys(ACTIVE));
 		return "template";
 	}
 	
@@ -53,6 +54,8 @@ public class LetterTemplateController {
 			letterTemplate.setUpdatedOn(new Date());
 		else
 			letterTemplate.setCreatedOn(new Date());
+		
+		 letterTemplate.setStatus(ACTIVE);
 		 letterTemplateRepo.save(letterTemplate);
 		return "redirect:/letter/template";
 	}
@@ -60,7 +63,7 @@ public class LetterTemplateController {
 	@RequestMapping(value="/search",method=RequestMethod.GET)
 	public String searchTemplate(Model model){
 		 
-		model.addAttribute("templates", letterTemplateRepo.findAll());
+		model.addAttribute("templates", letterTemplateRepo.findByStatus(ACTIVE));
 		return "search";
 	}
 	
@@ -68,7 +71,7 @@ public class LetterTemplateController {
 	public String edit(@PathVariable("id") long id,Model model){
 		Optional<LetterTemplate> template = letterTemplateRepo.findById(id);
 		model.addAttribute("letterTemplate",template);
-		model.addAttribute("keys",attributeRepo.findAllKeys());
+		model.addAttribute("keys",attributeRepo.findAllKeys(ACTIVE));
 		return "template";
 		
 	}
@@ -115,13 +118,13 @@ public class LetterTemplateController {
 	
 	@GetMapping("/attributes")
 	public @ResponseBody String addAttributes(){
-		Attribute attribute = new Attribute("name",0, 0, "Ravi");
+		Attribute attribute = new Attribute("name",0, 0, "Ravi",ACTIVE);
 		attributeRepo.save(attribute);
-		Attribute attribute2 = new Attribute("date",0, 0, "07-2020");
+		Attribute attribute2 = new Attribute("date",0, 0, "07-2020",ACTIVE);
 		attributeRepo.save(attribute2);
-		Attribute attribute3 = new Attribute("cost",0, 0, "1857");
+		Attribute attribute3 = new Attribute("cost",0, 0, "1857",ACTIVE);
 		attributeRepo.save(attribute3);
-		Attribute attribute4 = new Attribute("image",50, 20, PATH+"logo.png");
+		Attribute attribute4 = new Attribute("image",50, 20, PATH+"logo.png",ACTIVE);
 		attributeRepo.save(attribute4);
 		return "good";
 	}
