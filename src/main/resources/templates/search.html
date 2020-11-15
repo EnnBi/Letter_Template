@@ -1,0 +1,76 @@
+<html xmlns:th="http://www.thymleaf.org">
+<head>
+<style type="text/css">
+.form-group.footable-filtering-search .input-group-btn {
+    display: none;
+}
+
+.form-group.footable-filtering-search {
+	width: 100%;
+}
+.form-group.footable-filtering-search .input-group {
+    width: 100% !important;
+}
+</style>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+<link rel="stylesheet" th:href="@{/css/footable.standalone.min.css}" type="text/css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light static-top mb-5 shadow">
+  <div class="container">
+    <a class="navbar-brand" href="#">Template Creator</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/letter/template">Add</a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="/letter/search">Search</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container">
+<table id="table" class="table table-striped" data-paging="true" data-filtering="true">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Type</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="template,iter : ${templates}">
+      <th scope="row" th:text="${iter.index+1}"></th>
+      <td th:text="${template.name}">Name</td>
+      <td th:text="${template.type}">Type</td>
+      <td>
+          <a th:href="@{'/letter/edit/'+${template.id}}" class="btn btn-primary">Edit</a>
+		  <a th:href="@{'/letter/delete/'+${template.id}}"  class="btn btn-danger">Delete</a>
+	  </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+<script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/footable.min.js}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#table').footable({
+		 "paging": {
+			"enabled": true
+		 } 
+		
+	});
+	
+});
+</script>
+</body>
+</html>

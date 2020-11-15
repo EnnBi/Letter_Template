@@ -5,7 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,9 @@ public class LetterTemplateController {
 	@RequestMapping(value="/template",method=RequestMethod.GET)
 	public String getTemplate(Model model){
 		
-		model.addAttribute("letterTemplate", new LetterTemplate());
+		if(!model.asMap().containsKey("letterTemplate"))
+			model.addAttribute("letterTemplate", new LetterTemplate());
+		
 		model.addAttribute("keys", attributeRepo.findAllKeys());
 		return "template";
 	}
@@ -45,11 +49,35 @@ public class LetterTemplateController {
 	
 	@RequestMapping(value="/template",method=RequestMethod.POST)
 	public String saveTemplate(LetterTemplate letterTemplate,Model model){
-	
-		
+		if(letterTemplate.getId()>0)
+			letterTemplate.setUpdatedOn(new Date());
+		else
+			letterTemplate.setCreatedOn(new Date());
 		 letterTemplateRepo.save(letterTemplate);
-		
 		return "redirect:/letter/template";
+	}
+	
+	@RequestMapping(value="/search",method=RequestMethod.GET)
+	public String searchTemplate(Model model){
+		 
+		model.addAttribute("templates", letterTemplateRepo.findAll());
+		return "search";
+	}
+	
+	@RequestMapping(value="/edit/{id}",method=RequestMethod.GET)
+	public String edit(@PathVariable("id") long id,Model model){
+		Optional<LetterTemplate> template = letterTemplateRepo.findById(id);
+		model.addAttribute("letterTemplate",template);
+		model.addAttribute("keys",attributeRepo.findAllKeys());
+		return "template";
+		
+	}
+	
+	@RequestMapping(value="/delete/{id}",method=RequestMethod.GET)
+	public String delete(@PathVariable("id") long id){
+		letterTemplateRepo.deleteById(id);
+		return "redirect:/letter/search";
+		
 	}
 	
 	@RequestMapping(value="/template/{name}",method=RequestMethod.GET)

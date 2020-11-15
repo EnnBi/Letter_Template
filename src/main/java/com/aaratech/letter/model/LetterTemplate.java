@@ -1,5 +1,7 @@
 package com.aaratech.letter.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,8 +17,18 @@ public class LetterTemplate {
 	
 	String name;
 	
+	String type;
+	
 	@Column(name="BODY",columnDefinition="ntext")
 	String body;	
+	
+	Date createdOn;
+	
+	String createdBy;
+	
+	Date updatedOn;
+	
+	String updatedBy;
 	
 
 	public long getId() {
@@ -43,4 +55,45 @@ public class LetterTemplate {
 		this.body = body; 
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getUpdatedOn() {
+		return updatedOn;
+	}
+
+	public void setUpdatedOn(Date updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+	
+	
 }

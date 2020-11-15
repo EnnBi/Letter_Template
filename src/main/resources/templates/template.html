@@ -15,13 +15,22 @@ body {
 margin-top: 10px;
 margin-bottom: 10px;
 }
+.form-group.footable-filtering-search .input-group-btn {
+    display: none;
+}
 
+.form-group.footable-filtering-search {
+	width: 100%;
+}
+.form-group.footable-filtering-search .input-group {
+    width: 100% !important;
+}
 
 </style>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+<link rel="stylesheet" th:href="@{/css/footable.standalone.min.css}" type="text/css">
 </head>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
-<script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light static-top mb-5 shadow">
   <div class="container">
@@ -30,22 +39,14 @@ margin-bottom: 10px;
           <span class="navbar-toggler-icon"></span>
         </button>
     <div class="collapse navbar-collapse" id="navbarResponsive">
-      <!-- <ul class="navbar-nav ml-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">Home
-                <span class="sr-only">(current)</span>
-              </a>
-        </li>
+      <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a class="nav-link" href="#">About</a>
+          <a class="nav-link" href="/letter/template">Add</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Services</a>
+         <li class="nav-item">
+          <a class="nav-link" href="/letter/search">Search</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Contact</a>
-        </li>
-      </ul> -->
+      </ul>
     </div>
   </div>
 </nav>
@@ -55,13 +56,21 @@ margin-bottom: 10px;
   <div class="card border-0 shadow my-5">
   
     <div class="card-body p-5">
-    <h1 class="font-weight-light">Template Details</h1>
+    <h6 class="font-weight-light">Template Details</h6>
     <div class="row">
     <div class="col-md-8">
       
       <form th:object="${letterTemplate}"  th:action="@{/letter/template}" method="post" class="form-signin" id="form">
       <div class="form-label-group mg-ud" >
-                <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Name" required/>
+      			<input type="hidden" id="id" th:field="*{id}"/>
+                <input type="text" id="name" th:field="*{name}" maxlength="50" class="form-control" placeholder="Name" required/>
+       </div>
+       <div class="form-label-group mg-ud" >
+              <select th:field="*{type}" class="form-control">
+              	<option value="" >Select Type</option>
+			    <option th:value="Email" th:text="Email"></option>
+			    <option th:value="SMS" th:text="SMS"></option>
+			</select>
        </div>
         <div class="form-label-group mg-ud">
                 <textarea id="body" class="form-control" th:field="*{body}" rows="13" cols="6" placeholder="Body" required></textarea>
@@ -76,10 +85,16 @@ margin-bottom: 10px;
        </div>
        <div class="col-md-4">
        	<div class="list-group">
-       	<ul>
-			  <li class="list-group-item list-group-item-action active " style="color: white;">Attributes</li>
-			  <li th:each="key: ${keys}" class="list-group-item list-group-item-action" th:text="${key}" style="cursor: pointer;" onclick="insertKey(this)">No attribute</li>
-		</ul>
+			<table class="table table-striped" data-paging="true" data-filtering="true" id="table">
+				<thead>
+					<tr>
+						<th>Attributes</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="key: ${keys}" style="cursor: pointer;" onclick="insertKey(this)"><td th:text="${key}"></td></tr>
+				</tbody>
+			</table>
 		</div>
        </div>
     </div>
@@ -87,12 +102,16 @@ margin-bottom: 10px;
   </div>
 </div>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+<script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-footable/3.1.6/footable.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-footable/3.1.6/footable.min.js"></script> -->
 <script src="https://cdn.ckeditor.com/4.15.1/standard-all/ckeditor.js"></script>
-
+<script th:src="@{/js/footable.min.js}"></script>
 <script>	
 CKEDITOR.replace('body',{
 	width:  '670px',
-	height: '200px'
+	height: '380px'
 	});
 function insertKey(e){ 
 	var key = '${'+e.innerText+'}'
@@ -104,6 +123,19 @@ $(document).ready(function(){
 	$('.list-group-item-action').click(function(e){
 		e.preventDefault();
 	});
+	
+	$('#table').footable({
+		 "paging": {
+			"enabled": true,
+			"size":"10"
+		 } 
+		
+	});
+	
+	/* $('.table').on('postinit.ft.table', function(e, ft) {
+		  $(this).find('.footable-filtering-search .input-group').css('width','75%')
+		}).footable(); */
+	
 });    
 </script>
 </body>
