@@ -7,8 +7,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
+@Table(name="LETTER_TEMPLATE")
 public class LetterTemplate {
 
 	@Id
@@ -22,6 +26,7 @@ public class LetterTemplate {
 	@Column(name="BODY",columnDefinition="ntext")
 	String body;	
 	
+	@DateTimeFormat(pattern="dd-MM-yyyy")
 	Date createdOn;
 	
 	String createdBy;
@@ -32,6 +37,8 @@ public class LetterTemplate {
 	
 	String status;
 
+	boolean approved;
+	
 	public long getId() {
 		return id;
 	}
@@ -102,6 +109,14 @@ public class LetterTemplate {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public boolean isApproved() {
+		return approved;
+	}
+
+	public void setApproved(boolean approved) { 
+		this.approved = approved;
 	}
 	
 	

@@ -11,9 +11,21 @@
 .form-group.footable-filtering-search .input-group {
     width: 100% !important;
 }
+
+@media (min-width: 768px) {
+  .modal-xl {
+    width: 90%;
+   max-width:1200px;
+  }
+}
+
+.mtb{
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
 </style>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
-<link rel="stylesheet" th:href="@{/css/footable.standalone.min.css}" type="text/css">
+<link rel="stylesheet" th:href="@{/css/footable.standalone.min.css}" type="text/css"/>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light static-top mb-5 shadow">
@@ -22,7 +34,7 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-    <div class="collapse navbar-collapse" id="navbarResponsive">
+    <!-- <div class="collapse navbar-collapse" id="navbarResponsive">
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
           <a class="nav-link" href="/letter/template">Add</a>
@@ -31,11 +43,14 @@
           <a class="nav-link" href="/letter/search">Search</a>
         </li>
       </ul>
-    </div>
+    </div> -->
   </div>
 </nav>
 <div class="container">
-<table id="table" class="table table-striped" data-paging="true" data-filtering="true">
+<div class="row" style="float:right">
+	<button class="btn btn-success" data-toggle="modal" data-target="#myModal">Add</button>
+</div>
+<table id="maintable" class="table table-striped" data-paging="true" data-filtering="true">
   <thead>
     <tr>
       <th scope="col">#</th>
@@ -43,6 +58,7 @@
       <th scope="col">Type</th>
       <th scope="col">Created By</th>
       <th scope="col">Created On</th>
+      <th scope="col">Status</th>
       <th scope="col">Actions</th>
     </tr>
   </thead>
@@ -52,26 +68,127 @@
       <td th:text="${template.name}">Name</td>
       <td th:text="${template.type}">Type</td>
       <td th:text="${template.createdBy}">Created By</td>
-      <td th:text="${template.createdOn}">Created On</td>
+      <td th:text="${#dates.format(template.createdOn, 'dd-MM-yyyy')}">Created On</td>
+      <td th:if="${template.approved}">Approved</td>
+      <td th:unless="${template.approved}">Waiting for Approval</td>
       <td>
+      	  <a th:href="@{'/letter/edit/'+${template.id}}" class="btn btn-warning">View</a>
           <a th:href="@{'/letter/edit/'+${template.id}}" class="btn btn-primary">Edit</a>
 		  <a th:href="@{'/letter/delete/'+${template.id}}"  class="btn btn-danger">Delete</a>
 	  </td>
     </tr>
-  </tbody>
+  </tbody> 
 </table>
-</div>
+
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+   	   <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>  	
+    <div class="card-body p-5">
+    <h6 class="font-weight-light">Template Details</h6>
+    <div class="row">
+    <div class="col-md-8">
+      
+      <form th:object="${letterTemplate}"  th:action="@{/letter/template}" method="post" class="form-signin" id="addform">
+      <div class="form-label-group mg-ud mtb" >
+      			<input type="hidden" id="id" th:field="*{id}"/>
+                <input type="text" id="name" th:field="*{name}" maxlength="50" class="form-control" placeholder="Name" required="required"/>
+       </div>
+       <div class="form-label-group mg-ud mtb" >
+              <select th:field="*{type}" class="form-control">
+              	<option value="" >Select Type</option>
+			    <option th:value="Email" th:text="Email"></option>
+			    <option th:value="SMS" th:text="SMS"></option>
+			</select>
+       </div>
+        <div class="form-label-group mg-ud mtb">
+                <textarea id="body" class="form-control" th:field="*{body}" rows="13" cols="6" placeholder="Body" required="required"></textarea>
+       </div>
+       <div class="row mtb">
+	       <div class="col text-center ">
+	       		<input class="btn btn-primary btn-md text-uppercase" type="submit" value="Save" id="saveTemplate"/>
+	       		<input class="btn btn-success btn-md text-uppercase"  disabled="disabled" value="Submit for Approval"/>
+	       		
+	    	</div>
+       </div>
+      	
+       </form>
+       </div>
+       <div class="col-md-4">
+       	<div class="list-group">
+			<table class="table table-striped" data-paging="true" data-filtering="true" id="attrtable">
+				<thead>
+					<tr>
+						<th>Attributes</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="key: ${keys}" style="cursor: pointer;" onclick="insertKey(this)"><td th:text="${key}"></td></tr>
+				</tbody>
+			</table>
+		</div>
+       </div>
+    </div>
+    </div>
+  </div>
+      </div>
+    </div>
+  </div>
+
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
-<script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+ --><script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-footable/3.1.6/footable.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-footable/3.1.6/footable.min.js"></script> -->
+<script src="https://cdn.ckeditor.com/4.15.1/standard-all/ckeditor.js"></script>
 <script th:src="@{/js/footable.min.js}"></script>
 <script type="text/javascript">
+
+CKEDITOR.replace('body',{
+	width:  '670px',
+	height: '380px'
+	});
+function insertKey(e){ 
+	var key = '${'+e.innerText+'}'
+  CKEDITOR.instances['body'].insertHtml(key);
+}
+  
 $(document).ready(function(){
-	$('#table').footable({
+	$('#maintable').footable({
 		 "paging": {
 			"enabled": true
 		 } 
 		
+	});
+		
+	$('#attrtable').footable({
+		 "paging": {
+			"enabled": true,
+			"size":"10"
+		 } 
+		
+	});
+	
+	$('#addform').submit(function(e){
+		e.preventDefault();
+		var body = CKEDITOR.instances.body.getData();
+		$("textarea#body").val(body);
+		var data = $('#addform').serialize();
+		 
+		var url = $('#addform').attr('action');
+		console.log(data);
+		var saveData = $.ajax({
+		      type: 'POST',
+		      url: url,
+		      data: data,
+		      dataType: "application/json",
+		      success: function(resultData) {
+		    	  alert("Save Complete")
+		      }
+		});
+		saveData.error(function() { alert("Something went wrong"); });
 	});
 	
 });

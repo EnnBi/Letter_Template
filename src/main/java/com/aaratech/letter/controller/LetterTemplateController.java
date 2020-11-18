@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +38,7 @@ public class LetterTemplateController {
 	final String ACTIVE="Active";
 	final String PATH = "D:\\reports_output\\";
 	
-	@RequestMapping(value="/template",method=RequestMethod.GET)
+	/*@RequestMapping(value="/template",method=RequestMethod.GET)
 	public String getTemplate(Model model){
 		
 		if(!model.asMap().containsKey("letterTemplate"))
@@ -45,46 +46,58 @@ public class LetterTemplateController {
 		
 		model.addAttribute("keys", attributeRepo.findAllKeys(ACTIVE));
 		return "template";
-	}
+	}*/
 	
 	
 	@RequestMapping(value="/template",method=RequestMethod.POST)
-	public String saveTemplate(LetterTemplate letterTemplate,Model model){
+	public @ResponseBody ResponseEntity<?> saveTemplate(LetterTemplate letterTemplate,Model model){
 		if(letterTemplate.getId()>0)
 			letterTemplate.setUpdatedOn(new Date());
 		else
 			letterTemplate.setCreatedOn(new Date());
 		
 		 letterTemplate.setStatus(ACTIVE);
-		 letterTemplateRepo.save(letterTemplate);
-		return "redirect:/letter/template";
+		 letterTemplate = letterTemplateRepo.save(letterTemplate);
+		return ResponseEntity.ok(letterTemplate);
 	}
 	
 	@RequestMapping(value="/search",method=RequestMethod.GET)
 	public String searchTemplate(Model model){
-		 
-		model.addAttribute("templates", letterTemplateRepo.findByStatus(ACTIVE));
+		
+		if(!model.asMap().containsKey("letterTemplate"))
+			model.addAttribute("letterTemplate", new LetterTemplate());
+		
+		model.addAttribute("keys", attributeRepo.findAllKeys(ACTIVE));
+		
+		model.addAttribute("templates", letterTemplateRepo.findByStatusAndApproved(ACTIVE,true));
 		return "search";
 	}
 	
+	@RequestMapping(value="/authorize",method=RequestMethod.GET)
+	public String authorizeTemplate(Model model){
+		model.addAttribute("letterTemplate", new LetterTemplate());
+		model.addAttribute("templates", letterTemplateRepo.findByStatusAndApproved(ACTIVE,false));
+		return "authorize";
+	}
+	
 	@RequestMapping(value="/edit/{id}",method=RequestMethod.GET)
-	public String edit(@PathVariable("id") long id,Model model){
+	public @ResponseBody ResponseEntity<?> edit(@PathVariable("id") long id,Model model){
 		Optional<LetterTemplate> template = letterTemplateRepo.findById(id);
 		model.addAttribute("letterTemplate",template);
 		model.addAttribute("keys",attributeRepo.findAllKeys(ACTIVE));
-		return "template";
+		return ResponseEntity.ok("");
 		
 	}
 	
 	@RequestMapping(value="/delete/{id}",method=RequestMethod.GET)
-	public String delete(@PathVariable("id") long id){
+	public  @ResponseBody ResponseEntity<?> delete(@PathVariable("id") long id){
 		letterTemplateRepo.deleteById(id);
-		return "redirect:/letter/search";
+		return ResponseEntity.ok("");
 		
 	}
 	
 	@RequestMapping(value="/template/{name}",method=RequestMethod.GET)
-	public @ResponseBody String generateTemplate(@PathVariable("name") String name){
+	public @ResponseBody ResponseEntity<?> generateTemplate(@PathVariable("name") String name){
 		LetterTemplate template= letterTemplateRepo.findByName(name);
 		List<String> keys = new ArrayList<String>(Arrays.asList(StringUtils.substringsBetween(template.getBody(),"${","}")));
 		 
@@ -113,7 +126,8 @@ public class LetterTemplateController {
 		
 		String fileName = PATH+template.getName()+".pdf";
 		generatePdf(body, fileName);
-		return "good";
+		return ResponseEntity.ok("");
+		
 	}
 	
 	@GetMapping("/attributes")
