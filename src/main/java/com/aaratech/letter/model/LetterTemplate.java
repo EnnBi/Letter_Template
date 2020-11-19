@@ -37,7 +37,7 @@ public class LetterTemplate {
 	
 	String status;
 
-	boolean approved;
+	String approvalStatus;
 	
 	public long getId() {
 		return id;
@@ -111,14 +111,14 @@ public class LetterTemplate {
 		this.status = status;
 	}
 
-	public boolean isApproved() {
-		return approved;
+	public String getApprovalStatus() {
+		return approvalStatus;
 	}
 
-	public void setApproved(boolean approved) { 
-		this.approved = approved;
+	public void setApprovalStatus(String approvalStatus) {
+		this.approvalStatus = approvalStatus;
 	}
-	
+
 	
 	
 }

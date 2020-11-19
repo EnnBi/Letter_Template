@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,32 +35,49 @@ public class LetterTemplateController {
 	AttributeRepo attributeRepo;
 	
 	final String ACTIVE="Active";
+	final String INACTIVE="Inactive";
+	final String APPROVED="Approved";
+	final String CREATED="Created";
+	final String WAITING="Waiting for Approval";
 	final String PATH = "D:\\reports_output\\";
-	
-	/*@RequestMapping(value="/template",method=RequestMethod.GET)
-	public String getTemplate(Model model){
 		
-		if(!model.asMap().containsKey("letterTemplate"))
-			model.addAttribute("letterTemplate", new LetterTemplate());
-		
-		model.addAttribute("keys", attributeRepo.findAllKeys(ACTIVE));
-		return "template";
-	}*/
-	
-	
 	@RequestMapping(value="/template",method=RequestMethod.POST)
 	public @ResponseBody ResponseEntity<?> saveTemplate(LetterTemplate letterTemplate,Model model){
-		if(letterTemplate.getId()>0)
+		if(letterTemplate.getId()>0){
+			LetterTemplate existingLT = letterTemplateRepo.findById(letterTemplate.getId()).orElse(null);
+			letterTemplate.setCreatedBy(existingLT.getCreatedBy());
+			letterTemplate.setCreatedOn(existingLT.getCreatedOn());
+			letterTemplate.setApprovalStatus(CREATED);
+			letterTemplate.setStatus(existingLT.getStatus());
 			letterTemplate.setUpdatedOn(new Date());
-		else
+		}
+		else{
 			letterTemplate.setCreatedOn(new Date());
+			 letterTemplate.setStatus(ACTIVE);
+			 letterTemplate.setApprovalStatus(CREATED);
+		}
 		
-		 letterTemplate.setStatus(ACTIVE);
 		 letterTemplate = letterTemplateRepo.save(letterTemplate);
 		return ResponseEntity.ok(letterTemplate);
 	}
 	
-	@RequestMapping(value="/search",method=RequestMethod.GET)
+	@GetMapping("/submitForApproval/{id}")
+	public @ResponseBody ResponseEntity<?> submitForApproval(@PathVariable("id") long id){
+		LetterTemplate  letterTemplate = letterTemplateRepo.findById(id).orElse(null);
+		letterTemplate.setApprovalStatus(WAITING);
+		letterTemplate = letterTemplateRepo.save(letterTemplate);
+		return ResponseEntity.ok(letterTemplate);
+	}
+	
+	@GetMapping("/approve/{id}")
+	public @ResponseBody ResponseEntity<?> approve(@PathVariable("id") long id){
+		LetterTemplate  letterTemplate = letterTemplateRepo.findById(id).orElse(null);
+		letterTemplate.setApprovalStatus(APPROVED);
+		letterTemplate = letterTemplateRepo.save(letterTemplate);
+		return ResponseEntity.ok(letterTemplate);
+	}
+	
+	@RequestMapping(value="/manage",method=RequestMethod.GET)
 	public String searchTemplate(Model model){
 		
 		if(!model.asMap().containsKey("letterTemplate"))
@@ -69,23 +85,23 @@ public class LetterTemplateController {
 		
 		model.addAttribute("keys", attributeRepo.findAllKeys(ACTIVE));
 		
-		model.addAttribute("templates", letterTemplateRepo.findByStatusAndApproved(ACTIVE,true));
+		model.addAttribute("templates", letterTemplateRepo.findByStatusAndApprovalStatusIn(ACTIVE,Arrays.asList(CREATED,APPROVED)));
 		return "search";
 	}
+	
+	
 	
 	@RequestMapping(value="/authorize",method=RequestMethod.GET)
 	public String authorizeTemplate(Model model){
 		model.addAttribute("letterTemplate", new LetterTemplate());
-		model.addAttribute("templates", letterTemplateRepo.findByStatusAndApproved(ACTIVE,false));
+		model.addAttribute("templates", letterTemplateRepo.findByStatusAndApprovalStatusIn(ACTIVE,Arrays.asList(WAITING)));
 		return "authorize";
 	}
 	
 	@RequestMapping(value="/edit/{id}",method=RequestMethod.GET)
 	public @ResponseBody ResponseEntity<?> edit(@PathVariable("id") long id,Model model){
-		Optional<LetterTemplate> template = letterTemplateRepo.findById(id);
-		model.addAttribute("letterTemplate",template);
-		model.addAttribute("keys",attributeRepo.findAllKeys(ACTIVE));
-		return ResponseEntity.ok("");
+		LetterTemplate template = letterTemplateRepo.findById(id).orElse(null);
+		return ResponseEntity.ok(template);
 		
 	}
 	
@@ -147,10 +163,8 @@ public class LetterTemplateController {
 		try {
 			HtmlConverter.convertToPdf(body, new FileOutputStream(fileName));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

@@ -1,4 +1,5 @@
 <html xmlns:th="http://www.thymleaf.org">
+<meta name="context-path" th:content="@{/}"/>
 <head>
 <style type="text/css">
 .form-group.footable-filtering-search .input-group-btn {
@@ -53,7 +54,6 @@
 <table id="maintable" class="table table-striped" data-paging="true" data-filtering="true">
   <thead>
     <tr>
-      <th scope="col">#</th>
       <th scope="col">Name</th>
       <th scope="col">Type</th>
       <th scope="col">Created By</th>
@@ -63,18 +63,16 @@
     </tr>
   </thead>
   <tbody>
-    <tr th:each="template,iter : ${templates}">
-      <th scope="row" th:text="${iter.index+1}"></th>
+    <tr th:each="template,iter : ${templates}" th:id="@{'temp'+${template.id}}">
       <td th:text="${template.name}">Name</td>
       <td th:text="${template.type}">Type</td>
       <td th:text="${template.createdBy}">Created By</td>
       <td th:text="${#dates.format(template.createdOn, 'dd-MM-yyyy')}">Created On</td>
-      <td th:if="${template.approved}">Approved</td>
-      <td th:unless="${template.approved}">Waiting for Approval</td>
+      <td th:text="${template.approvalStatus}">Approved</td>
       <td>
-      	  <a th:href="@{'/letter/edit/'+${template.id}}" class="btn btn-warning">View</a>
-          <a th:href="@{'/letter/edit/'+${template.id}}" class="btn btn-primary">Edit</a>
-		  <a th:href="@{'/letter/delete/'+${template.id}}"  class="btn btn-danger">Delete</a>
+      	  <button th:value="${template.id}" class="btn btn-warning view" id="view">View</button>
+          <button th:value="${template.id}" class="btn btn-primary edit" id="edit">Edit</button>
+		  <button th:value="${template.id}"  class="btn btn-danger delete" id="delete">Delete</button>
 	  </td>
     </tr>
   </tbody> 
@@ -97,7 +95,7 @@
                 <input type="text" id="name" th:field="*{name}" maxlength="50" class="form-control" placeholder="Name" required="required"/>
        </div>
        <div class="form-label-group mg-ud mtb" >
-              <select th:field="*{type}" class="form-control">
+              <select th:field="*{type}" class="form-control" required="required">
               	<option value="" >Select Type</option>
 			    <option th:value="Email" th:text="Email"></option>
 			    <option th:value="SMS" th:text="SMS"></option>
@@ -108,8 +106,8 @@
        </div>
        <div class="row mtb">
 	       <div class="col text-center ">
-	       		<input class="btn btn-primary btn-md text-uppercase" type="submit" value="Save" id="saveTemplate"/>
-	       		<input class="btn btn-success btn-md text-uppercase"  disabled="disabled" value="Submit for Approval"/>
+	       		<input class="btn btn-primary btn-md" type="submit" value="Save" id="saveBtn"/>
+	       		<input class="btn btn-success btn-md" type="button"  disabled="disabled" value="Submit for Approval" id="approvalBtn"/>
 	       		
 	    	</div>
        </div>
@@ -136,14 +134,17 @@
       </div>
     </div>
   </div>
+  
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
- --><script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-footable/3.1.6/footable.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-footable/3.1.6/footable.min.js"></script> -->
-<script src="https://cdn.ckeditor.com/4.15.1/standard-all/ckeditor.js"></script>
+
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
 <script th:src="@{/js/footable.min.js}"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+ <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.ckeditor.com/4.15.1/standard-all/ckeditor.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
 <script type="text/javascript">
 
 CKEDITOR.replace('body',{
@@ -156,21 +157,9 @@ function insertKey(e){
 }
   
 $(document).ready(function(){
-	$('#maintable').footable({
-		 "paging": {
-			"enabled": true
-		 } 
-		
-	});
-		
-	$('#attrtable').footable({
-		 "paging": {
-			"enabled": true,
-			"size":"10"
-		 } 
-		
-	});
-	
+	var currentTemplate;
+	var _ctx = $('meta[name=context-path]').attr("content");
+	_ctx = _ctx.substr(0,_ctx.length - 1);
 	$('#addform').submit(function(e){
 		e.preventDefault();
 		var body = CKEDITOR.instances.body.getData();
@@ -183,14 +172,96 @@ $(document).ready(function(){
 		      type: 'POST',
 		      url: url,
 		      data: data,
-		      dataType: "application/json",
-		      success: function(resultData) {
-		    	  alert("Save Complete")
+		      success: function(data) {
+		    	  alert("Template Saved")	
+		    	  currentTemplate=data;
+		    	  $("#addform :input").prop("disabled", true);
+		    	  $('#approvalBtn').prop('disabled', false);
+		    	  CKEDITOR.instances.body.setReadOnly(true);
+		    	  var row = '<tr id="temp'+currentTemplate.id+'"><td>'+currentTemplate.name+'</td><td>'+currentTemplate.type+'</td><td></td><td>'+moment(currentTemplate.createdOn).format("DD-MM-YYYY")+'</td><td>'+currentTemplate.approvalStatus+'</td><td><a href="'+currentTemplate.id+'" class="btn btn-warning">View</a><a href="'+currentTemplate.id+'" class="btn btn-primary">Edit</a><a href="'+currentTemplate.id+'" class="btn btn-danger">Delete</a></td></tr>'
+		    	  $('#maintable > tbody:first').append(row);
+		      },
+		      error:function(XMLHttpRequest, textStatus, errorThrown){
+		    	  alert("Something went wrong.Please try again.")
 		      }
 		});
-		saveData.error(function() { alert("Something went wrong"); });
+		
 	});
 	
+	$('#approvalBtn').click(function(){
+		var url=_ctx+"/letter/submitForApproval/"+currentTemplate.id
+		$.get(url,function(data){
+			currentTemplate = data;
+			alert('Letter Template submitted for approval')
+			$('#temp'+data.id).remove();
+		});
+	});
+	
+	$('.view').click(function(e){
+		e.preventDefault();
+		var id=$(this).val();
+		var url=_ctx+"/letter/edit/"+id;
+		$.get(url,function(data){
+			currentTemplate = data;
+			$('#name').val(currentTemplate.name);
+			$('#type').val(currentTemplate.type);
+			CKEDITOR.instances.body.setData(currentTemplate.body);
+			CKEDITOR.instances.body.setReadOnly(true);
+			$("#addform :input").prop("disabled", true);
+			$('#myModal').modal('show');
+		});
+	});
+	
+	$('.edit').click(function(e){
+		e.preventDefault();
+		var id=$(this).val();
+		var url=_ctx+"/letter/edit/"+id;
+		$.get(url,function(data){
+			currentTemplate = data;
+			$('#id').val(id);
+			$('#name').val(currentTemplate.name);
+			$('#type').val(currentTemplate.type);
+			CKEDITOR.instances.body.setData(currentTemplate.body);
+			$('#myModal').modal('show');
+		});
+	});
+	
+	$('.delete').click(function(e){
+		e.preventDefault();
+		var id=$(this).val();
+		var url=_ctx+"/letter/delete/"+id;
+		$.get(url,function(data){
+			$('#temp'+id).remove();
+			alert('Template deleted successfully');
+		});
+	});
+	
+	$("#myModal").on("hide.bs.modal", function () {
+		$("#addform :input").prop("disabled", false);
+		$("#addform").trigger("reset");
+		CKEDITOR.instances.body.setData('');
+	});
+	
+});
+</script>
+<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+ -->
+<script type="text/javascript">
+$(document).ready(function(){
+	
+	$('#maintable').footable({
+		 "paging": {
+			"enabled": true
+		 } 
+		
+	});
+	$('#attrtable').footable({
+		 "paging": {
+			"enabled": true,
+			"size":"10"
+		 } 
+		
+	});
 });
 </script>
 </body>
